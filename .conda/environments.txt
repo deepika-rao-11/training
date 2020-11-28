@@ -1,0 +1,2 @@
+C:\Users\Sai\miniconda3\envs\session1
+C:\Users\Sai\miniconda3\envs\training

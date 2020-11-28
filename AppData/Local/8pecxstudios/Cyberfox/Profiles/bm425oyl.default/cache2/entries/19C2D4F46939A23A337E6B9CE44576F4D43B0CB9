@@ -1,0 +1,1369 @@
+/*
+ * Emmunition - Client link code
+ * Code start date - 2nd June 2014 / 02-06-2014
+ *
+ * Dependencies (dynamically loaded)
+ * 1] socket.io
+ * 2] wgxpath (wicked-good-xpath for IE)
+ * 3] emmunition-setup (loaded dynamically if OTP provided)
+ *
+ * Notes
+ * 1] TODO : wgxpath is required only by IE. It is 26k and that load can be avoided for other browsers.
+ * 2] TODO : Chat host port no. Is it OK?
+ *
+
+
+ */
+
+(function (window, document, undefined) {
+
+    var e_scripts = document.getElementsByTagName('script');
+    var staging = false;
+    for(i=0;((i<e_scripts.length) && (staging == false));i++) {
+        if (e_scripts[i].src) if (e_scripts[i].src.indexOf('staging.growzippy.com') > -1) staging = true;
+    }
+
+
+   // var emmunition_gdd_host        = window.location.protocol + '//gdd.testrmsid.com';
+   // var emmunition_gddservice_host = window.location.protocol + '//gdd.testrmsid.com';
+   // var emmunition_console_host    = window.location.protocol + '//console.growzippy.com';
+   // var emmunition_gdchat_host     = window.location.protocol + '//chat.testrmsid.com';
+    //var emmunition_gddservice_host = window.location.protocol + '//gdd.testrmsid.com';
+    //var emmunition_console_host    = window.location.protocol + '//console.growzippy.com';
+    //var emmunition_gdchat_host     = window.location.protocol + '//chat.testrmsid.com';
+    
+    var emmunition_gdd_host        = window.location.protocol + '//uba.elistva.com';
+    var emmunition_gddservice_host = window.location.protocol + '//uba.elistva.com';
+    var emmunition_console_host    = window.location.protocol + '//console.growzippy.com';
+    var emmunition_gdchat_host     = window.location.protocol + '//events.elistva.com';
+
+    var emmunition_merchant_id;
+    var emmunition_user_id;
+    var emmunition_chat_socket;
+    var emmunition_service_socket;
+    //var emmunition_page_info = {};
+    var emmunition_global_elements = {};
+    var emmunition_net_seconds = 0;
+    var emmunition_seconds = 0;
+    var emmunition_idle_timeout = 0;
+    var emmunition_activity_counter = 0;
+    var emmunition_once_idle = false;
+    var emmunition_once_active = false;
+    var emmunition_once_exit = false;
+    var emmunition_once_scroll_50 = false;
+    var emmunition_once_scroll_75 = false;
+    var emmunition_once_scroll_100 = false;
+    var emmunition_rules_loaded_global = false;
+    var emmunition_rules_loaded_local = false;
+
+    var emmunition_shown_popups = [];
+    var emmunition_popup_queue = {};
+    var emmunition_display_state = {};
+    var emmunition_popups_leader_board = {};
+    var emmunition_hold_off = null;
+    var emmunition_cache_queue = [];
+
+
+    var emmunition_popup_counter = 0;
+
+    window._emmunition_global_elements = [];
+    window._emmunition_page_elements = [];
+
+    var emmunition_monitor_elements = [];
+    var emmunition_global_indexes = {};
+
+    var emmunition_popup_list = {};
+
+    var emmunution_show_on_exit = null;
+
+    var isIE = (navigator.userAgent.indexOf("MSIE") != -1);
+
+    var emmunition_cart = {};
+
+    /*
+    +---------------------------------------------------------
+    |Polyfill : Implementation of array filter for IE8
+    +---------------------------------------------------------
+    */
+    //IE8 does not have array filter. So we create our own
+    if (!Array.prototype.filter)
+    {
+      Array.prototype.filter = function(fun /*, thisp */)
+      {
+        "use strict";
+
+        if (this === void 0 || this === null)
+          throw new TypeError();
+
+        var t = Object(this);
+        var len = t.length >>> 0;
+        if (typeof fun !== "function")
+          throw new TypeError();
+
+        var res = [];
+        var thisp = arguments[1];
+        for (var i = 0; i < len; i++)
+        {
+          if (i in t)
+          {
+            var val = t[i]; // in case fun mutates this
+            if (fun.call(thisp, val, i, t))
+              res.push(val);
+          }
+        }
+
+        return res;
+      };
+    }
+
+    /*
+    +---------------------------------------------------------
+    |Polyfill : Implementation of string trim for IE8
+    +---------------------------------------------------------
+    */
+    //IE8 does not have String.trim. So we create our own
+    if(typeof String.prototype.trim !== 'function') {
+      String.prototype.trim = function() {
+        return this.replace(/^\s+|\s+$/g, '');
+      };
+    }
+
+    /*
+    +---------------------------------------------------------
+    |Polyfill : Node type declations for IE8 (used by xpath)
+    +---------------------------------------------------------
+    */
+    // IE8 does not have NODE types
+    if (!window.Node){
+      var Node =
+          {
+            ELEMENT_NODE                :  1,
+            ATTRIBUTE_NODE              :  2,
+            TEXT_NODE                   :  3,
+            CDATA_SECTION_NODE          :  4,
+            ENTITY_REFERENCE_NODE       :  5,
+            ENTITY_NODE                 :  6,
+            PROCESSING_INSTRUCTION_NODE :  7,
+            COMMENT_NODE                :  8,
+            DOCUMENT_NODE               :  9,
+            DOCUMENT_TYPE_NODE          : 10,
+            DOCUMENT_FRAGMENT_NODE      : 11,
+            NOTATION_NODE               : 12
+          };
+    }
+
+
+    var pURL;
+    var hash;
+
+    /*
+    +---------------------------------------------------------
+    |Load dependencies dynamically
+    +---------------------------------------------------------
+    */
+
+    //Load the socket.io client
+    /*var script = document.createElement("script"),
+        tag = document.getElementsByTagName("script")[0];
+    script.src = emmunition_gdd_host+'/resources/gz_socket.io';
+    tag.parentNode.insertBefore(script, tag);*/
+
+    //load the wgx path library
+    //Required for XPATH evaluation in IE
+    //Load the socket.io client
+    if (isIE) {
+        var script2 = document.createElement("script"),
+               tag2 = document.getElementsByTagName("script")[0];
+        script2.src = emmunition_gdd_host+'/resources/wgxpath.install';
+        tag2.parentNode.insertBefore(script2, tag2);
+    }
+
+    /*
+    +---------------------------------------------------------
+    |Convert parameters provided with URL to json object
+    |used to check if OTP was passed
+    +---------------------------------------------------------
+    */
+    function emmunition_getJsonFromUrl() {
+        var query = location.search.substr(1);
+        var result = {};
+        var q = query.split('&');
+        for (var i = 0; i < q.length; i++) {
+            var item = q[i].split('=');
+            result[item[0]] = decodeURIComponent(item[1]);
+        }
+        return result;
+    }
+
+
+    /*
+    +---------------------------------------------------------
+    |Cross-browser implementation of add event listener
+    +---------------------------------------------------------
+    */
+    function emmunition_addEventListener(obj, evt, fnc) {
+        // W3C model
+        if (obj.addEventListener) {
+            if(navigator.userAgent.search("Firefox") >= 0) { 
+                obj.addEventListener(evt, fnc, true);
+            } else { 
+                obj.addEventListener(evt, fnc, false);
+            }
+            return true;
+        }
+        // Microsoft model
+        else if (obj.attachEvent) {
+            return obj.attachEvent('on' + evt, fnc);
+        }
+        // Browser don't support W3C or MSFT model, go on with traditional
+        else {
+            evt = 'on'+evt;
+            if(typeof obj[evt] === 'function'){
+                // Object already has a function on traditional
+                // Let's wrap it with our own function inside another function
+                fnc = (function(f1,f2){
+                    return function(){
+                        f1.apply(this,arguments);
+                        f2.apply(this,arguments);
+                    }
+                })(obj[evt], fnc);
+            }
+            obj[evt] = fnc;
+            return true;
+        }
+        return false;
+    } 
+    
+
+    /*
+    +---------------------------------------------------------
+    |Cookie management utility functions
+    +---------------------------------------------------------
+    */
+    var emmunition_createCookie = function (name, value, days) {
+        if(typeof(Storage) !== "undefined") {
+            localStorage.setItem(name,value);
+        } else {
+            var expires;
+            if (days) {
+                var date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toGMTString();
+            } else {
+                expires = "";
+            }
+            var nv = value.replace(";",":");
+            document.cookie = name + "=" + nv + expires + "; path=/";
+        }
+    }
+
+    function emmunition_getCookie(c_name) {
+
+        if(typeof(Storage) !== "undefined") {
+            return localStorage.getItem(c_name);
+        } else {
+            if (document.cookie.length > 0) {
+                c_start = document.cookie.indexOf(c_name + "=");
+                if (c_start != -1) {
+                    c_start = c_start + c_name.length + 1;
+                    c_end = document.cookie.indexOf(";", c_start);
+                    if (c_end == -1) {
+                        c_end = document.cookie.length;
+                    }
+                    return unescape(document.cookie.substring(c_start, c_end));
+                }
+            }
+            return "";
+        }
+    }
+
+    /*
+    +---------------------------------------------------------
+    |XPATH get element by. wgxpath takes over for IE here.
+    +---------------------------------------------------------
+    */
+    function getElementByXPath(xPath) {
+        if (xPath === undefined) return null;
+        if (xPath.length <= 0) return null;
+        var doc = document;
+        if(doc.evaluate) return doc.evaluate(xPath, document, null, 9, null).singleNodeValue;
+    }
+
+    function getElementXPath(element) {
+        if (element && element.id)
+            return '//*[@id="' + element.id + '"]';
+        else
+            return getElementTreeXPath(element);
+    };
+
+    function getElementTreeXPath(element) {
+        var paths = [];
+        // Use nodeName (instead of localName) so namespace prefix is included (if any).
+        for (; element && element.nodeType == 1; element = element.parentNode) {
+            var index = 0;
+            for (var sibling = element.previousSibling; sibling; sibling = sibling.previousSibling) {
+                // Ignore document type declaration.
+                // Chrome bug, making a constant : Node.DOCUMENT_TYPE_NODE
+                if (sibling.nodeType == 9)
+                    continue;
+
+                if (sibling.nodeName == element.nodeName)
+                    ++index;
+            }
+
+            var tagName = element.nodeName.toLowerCase();
+            var pathIndex = (index ? "[" + (index+1) + "]" : "");
+            paths.splice(0, 0, tagName + pathIndex);
+        }
+        return paths.length ? "/" + paths.join("/") : null;
+    };
+
+    /*
+    +---------------------------------------------------------
+    |Send the message to our servers using socket.io
+    +---------------------------------------------------------
+    */
+    function emmunition_send_info(msg_type,msg_payload) {
+        var messagePacket = {
+            merchant_id: emmunition_merchant_id,
+            user_id    : emmunition_user_id,
+            referer    : document.referrer,
+            location   : document.location.href,
+            type       : msg_type,
+            payload    : msg_payload
+        };
+        emmunition_service_socket.emit('message', messagePacket);
+    }
+    /*
+    +---------------------------------------------------------
+    |Helper functions for scroll detection
+    +---------------------------------------------------------
+    */
+    function emmunition_get_scroll_top() {
+        emmunition_detect_activity();
+
+        if(typeof pageYOffset!= 'undefined'){
+            //most browsers except IE before #9
+            return pageYOffset;
+        } else{
+            var B = document.body; //IE 'quirks'
+            var D = document.documentElement; //IE with doctype
+            D     = (D.clientHeight)? D: B;
+            return D.scrollTop;
+        }
+    }
+
+    function emmunition_get_doc_height() {
+        var D = document;
+        return Math.max(
+            D.body.scrollHeight, D.documentElement.scrollHeight,
+            D.body.offsetHeight, D.documentElement.offsetHeight,
+            D.body.clientHeight, D.documentElement.clientHeight
+        );
+    }
+
+
+    /*
+    +---------------------------------------------------------
+    |******** System Init Function ***************************
+    |Called when dependenies have finished loading
+    +---------------------------------------------------------
+    */
+
+    function emmunition_init(merchant) {
+        //Install WGX Path for XPATH support in IE
+        if (isIE) wgxpath.install();
+        //Strip the url off unwanted stuff.
+        pURL = [window.location.protocol, '//', window.location.host, window.location.pathname].join('');
+        pURL = pURL.replace(/(www[0-9]?\.)/,'');
+        pURL = pURL.replace('https://','');
+        pURL = pURL.replace('http://','');
+        hash = ':' + emmunition_MD5(pURL);
+
+        window._emmunition_page_url = pURL;
+        window._emmunition_page_ID  = hash;
+
+        //User management, check if new user or old user and other management stuff.
+        //We use a pseudo guid generator.
+
+        emmunition_merchant_id         = merchant;
+        window._emmunition_merchant_id = emmunition_merchant_id;
+        emmunition_user_id             = emmunition_getCookie('emmunition_user_id');
+
+        if (emmunition_user_id == null) {
+            emmunition_user_id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0,
+                    v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+
+            });
+            //Make cookie live for 1 day
+            emmunition_createCookie('emmunition_user_id', emmunition_user_id, 1);
+        }
+        //Establish chat connection
+        emmunition_chat_socket = io.connect(emmunition_gdchat_host, {
+            'transports'               :['websocket', 'jsonp-polling','xhr-polling','htmlfile'],
+            'force new connection'     : true,
+            'sync disconnect on unload': true
+        });
+        emmunition_chat_socket.on('connect', function () {
+            emmunition_chat_socket.emit('create_room', emmunition_user_id);
+            emmunition_chat_socket.on('chat', function (data) {
+                if (data.action == "SetUserId") {
+                    if ((typeof(Storage) !== "undefined") && data.user_id) {
+                        localStorage.setItem('emmunition_user_id', data.user_id);
+                        emmunition_user_id = emmunition_getCookie('emmunition_user_id');
+                    }
+                }
+            });
+        });
+
+        emmunition_service_socket = io.connect(emmunition_gddservice_host, {
+            'transports'               :['websocket','jsonp-polling','xhr-polling','htmlfile'],
+            'force new connection'     : true,
+            'sync disconnect on unload': true
+        });
+
+        emmunition_service_socket.on('connect', function () {
+            //Load the per page visited cookie
+            var visitedPages = emmunition_getCookie('emmunition_visited_pages');
+            if (visitedPages == null)
+                visitedPages = '';
+
+            var visitorType = 'NEW';
+            if (visitedPages.indexOf(hash) > -1) {
+                //Already visited page.
+                visitorType = 'EXISTING';
+            } else {
+                //New visitor to page
+                visitedPages = visitedPages + hash;
+                emmunition_createCookie('emmunition_visited_pages', visitedPages, 7);
+            }
+
+            var messagePacket = {
+                merchant_id: emmunition_merchant_id,
+                user_id    : emmunition_user_id,
+                referer    : document.referrer,
+                location   : document.location.href,
+                type       : 'PAGE_ENTRY',
+                payload    : visitorType
+            };
+
+            emmunition_service_socket.emit('message', messagePacket);
+            //Removed after proactive click recording before redirect.
+            //Check to see if we arrived at this page because of a popup
+
+            if(typeof(Storage) !== "undefined") {
+                var offerWhyS = localStorage.getItem('popup_clicked');
+                if (offerWhyS != null) {
+                    var offerWhy = JSON.parse(offerWhyS);
+                    localStorage.removeItem('popup_clicked');
+                    emmunition_send_info('POPUP_CLICKED',{offer : offerWhy});
+                }
+            }
+            //Setup all event detection
+            //mousemove keydown wheel DOMMouseScroll mousewheel mousedown touchstart touchmove MSPointerDown MSPointerMove
+            emmunition_addEventListener(document, 'keyup', emmunition_handler_key_paste); 
+            window.oncontextmenu = function(e){ emmunition_handler_paste(e)}; 
+           
+            //emmunition_addEventListener(document, 'ready', emmunition_handler_ready);
+            emmunition_addEventListener(document, 'click', emmunition_handler_onclick);
+            // emmunition_addEventListener(window, 'mouseout', emmunition_handler_onmouseout);
+            emmunition_addEventListener(window, 'scroll', emmunition_handler_onscroll);
+            emmunition_addEventListener(document, 'mousemove', emmunition_handler_onmousemove);
+            emmunition_addEventListener(document, 'wheel', emmunition_handler_onwheel);
+            emmunition_addEventListener(window, 'DOMMouseScroll', emmunition_handler_onDOMMouseScroll);
+            emmunition_addEventListener(document, 'mousewheel', emmunition_handler_onmousewheel);
+            emmunition_addEventListener(window, 'mousedown', emmunition_handler_onmousedown);
+            emmunition_addEventListener(document, 'touchstart', emmunition_handler_ontouchstart);
+            emmunition_addEventListener(document, 'touchmove', emmunition_handler_ontouchmove);
+            emmunition_addEventListener(document, 'MSPointerDown', emmunition_handler_onMSPointerDown);
+            emmunition_addEventListener(document, 'MSPointerMove', emmunition_handler_onMSPointerMove);
+
+        });
+
+        /*
+        +---------------------------------------------------------
+        |SETTINGS LOAD : Page local elements to track and monitor
+        +---------------------------------------------------------
+        */
+        //Load the page-local elements
+        if (isIE && window.XDomainRequest) {
+            var xdr4 = new XDomainRequest();
+
+            xdr4.onload = function() {
+                var r = JSON.parse(this.responseText);
+                if (r['status'] == true) {
+                    emmunition_page_elements         = JSON.parse(r['page_elements_info']['element_list']['S']);
+                    window._emmunition_page_elements = emmunition_page_elements;
+                    emmunition_rules_loaded_local    = true;
+                    window.setInterval(emmunition_check_idle_time, 1000);
+                }
+            };
+            xdr4.onprogress = function() {};
+            xdr4.ontimeout = function(){ };
+            xdr4.onerror = function () { };
+
+            url    = emmunition_gdd_host+'/pages/loadPageElementInfo';
+            params = JSON.stringify({
+                merchant_id :emmunition_merchant_id,
+                page_id     :window._emmunition_page_url
+            });
+
+            xdr4.open('POST', url);
+            xdr4.send(params);
+        } else {
+            var request4 = new XMLHttpRequest();
+            url          = emmunition_gdd_host+'/pages/loadPageElementInfo';
+            params       = JSON.stringify({
+                merchant_id:emmunition_merchant_id,
+                page_id    :window._emmunition_page_url
+            });
+
+            request4.open('POST', url, true);
+            request4.withCredentials = 'true';
+            request4.setRequestHeader("Content-type", "application/json; charset=utf-8");
+
+            request4.onreadystatechange = function() {
+                if(this.readyState == 4 && this.status == 200) {
+                    var r = JSON.parse(this.responseText);
+                    if (r['status'] == true) {
+                        try {
+                            emmunition_page_elements = JSON.parse(r['page_elements_info']['element_list']['S']);
+                        } catch (ex) {
+                            emmunition_page_elements = [];
+                        }
+                        window._emmunition_page_elements = emmunition_page_elements;
+                        emmunition_rules_loaded_local    = true;
+                        window.setInterval(emmunition_check_idle_time, 1000);
+                    }
+                }
+            }
+            request4.send(params);
+        }
+
+        // //Wait for page load to start firing events
+         if (document.readyState === 'complete') emmunition_after_page_load() ;
+         else emmunition_addEventListener(window, 'load', emmunition_after_page_load);
+    }
+
+    function emmunition_after_page_load() {
+        emmunition_check_autofill();
+        //Wait for both the local and gloabal elements to load
+        window.setTimeout(function () {
+           // if (emmunition_rules_loaded_local && emmunition_rules_loaded_global) {
+            if (emmunition_rules_loaded_local) {
+                emmunition_fireonce_events();
+            } else {
+                window.setTimeout(arguments.callee, 100);
+            }
+        }, 100);
+    }
+
+    /*
+    +---------------------------------------------------------
+    |Once the page is loaded and all the settings are loaded,
+    +---------------------------------------------------------
+    */
+    function emmunition_fireonce_events() { 
+        var isMobile = false;
+        try {
+            emmunition_addEventListener(window, 'change', emmunition_handler_onchange);
+        } catch (ex) {
+        }
+    }
+
+    /*
+    +---------------------------------------------------------
+    |Activity event handling functions just to check for idle
+    +---------------------------------------------------------
+    */
+    function emmunition_handler_onmousemove(e)      { emmunition_detect_activity(); }
+    function emmunition_handler_onwheel(e)          { emmunition_detect_activity(); }
+    function emmunition_handler_onDOMMouseScroll(e) { emmunition_detect_activity(); }
+    function emmunition_handler_onmousewheel(e)     { emmunition_detect_activity(); }
+    function emmunition_handler_onmousedown(e)      { emmunition_detect_activity(); }
+    function emmunition_handler_ontouchstart(e)     { emmunition_detect_activity(); }
+    function emmunition_handler_ontouchmove(e)      { emmunition_detect_activity(); }
+    function emmunition_handler_onMSPointerDown(e)  { emmunition_detect_activity(); }
+    function emmunition_handler_onMSPointerMove(e)  { emmunition_detect_activity(); }
+
+    
+    
+    /*
+    +---------------------------------------------------------
+    |*********** Main timer for codebase *********************
+    +---------------------------------------------------------
+    */
+    function emmunition_check_idle_time() {
+        emmunition_net_seconds++;
+        emmunition_seconds++;
+
+        if (emmunition_seconds%15 == 0) {
+            emmunition_send_info('IDLE_BIN',emmunition_seconds.toString());
+        }
+
+        if (emmunition_once_idle == false) {
+            if (emmunition_idle_timeout > 10) {
+                if (emmunition_seconds > emmunition_idle_timeout) {
+                    //emmunition_seconds = 0;
+                    emmunition_once_idle = true;
+
+                    // IDLE TIME AT BACKEND IS DISABLED FOR NOW. WE HAVE NO USE
+                    emmunition_send_info('IDLE','NA')
+                }
+            }
+        }
+    }
+
+     /*
+    +---------------------------------------------------------
+    |Activity handler for mouse clicks
+    +---------------------------------------------------------
+    */
+    function emmunition_handler_onclick(e) {
+                  
+         if(navigator.userAgent.search("Firefox") >= 0 ) {
+            if(e.which == "1"){ 
+            document.removeEventListener("paste", myFunctionPaste,true); } 
+        } else {
+            document.removeEventListener("paste", myFunctionPaste);
+        }
+        emmunition_detect_activity();
+        
+        var evt = e || window.event;
+        var targ = evt.target || evt.srcElement;
+        if (targ.nodeType == 3) targ = targ.parentNode;
+        var xpath = getElementXPath(targ);
+        var arrxpath = xpath.split("/");
+        var slicedpath = arrxpath.slice(0,arrxpath.length-1).join("/");        
+        var patt = new RegExp('/html/*');
+        if(patt.test(xpath) && slicedpath && slicedpath.length > 3){ 
+            var attribute_name = getElementByXpathb(xpath).getAttribute('name')||getElementByXpathb(slicedpath).getAttribute('name');
+        }
+        if(attribute_name == null){
+            attribute_name = xpath;
+        }
+        var str;
+        if (targ.childNodes[0]) {
+            //str = targ.childNodes[0].nodeValue;
+            str = targ.textContent || targ.innerText;
+            var str2 = targ.value;
+            if (str2) str = str2;
+            if (str) str = str.trim();
+            
+        } else {
+            str = '';
+        }
+        msg_payload = {
+            element_name        : attribute_name,
+            time_since_load     : emmunition_net_seconds,
+            //attached_text       : str,
+            scope               : 'PAGE-LOCAL'
+        };  
+        emmunition_send_info('EVENT_CLICK',msg_payload);
+    }
+
+
+    function getElementByXpathb(path) {
+        if(path){
+            return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+        } else {
+           return "/html";
+        }
+    } 
+
+
+    /*
+    +---------------------------------------------------------
+    |Activity handler for select change (combobox)
+    +---------------------------------------------------------
+    */  
+      
+    function emmunition_handler_onchange(e) {
+        var evt = e || window.event;
+        var targ = evt.target || evt.srcElement;
+        if (targ.nodeType == 3) targ = targ.parentNode; 
+        var xpath = getElementXPath(targ);
+        splitxpath = xpath.split("/");
+        try {
+            if(xpath) {
+                var attribute_name = getElementByXpathb(xpath).getAttribute('name');
+            } else {
+                var attribute_name = "Undefined";
+            }
+        } catch(ex) {
+            var attribute_name = "Undefined";
+        }
+        try {
+            index = targ.selectedIndex;
+            var newValue = '';
+            if (index >= 0 && targ.options.length > index) {
+                newValue = targ.options[index].value;
+            }
+            if(splitxpath[splitxpath.length-1]=="select"){
+                msg_payload = {
+                    element_name        : attribute_name,
+                    time_since_load     : emmunition_net_seconds,
+                    //selection           : newValue,
+                    scope               : 'PAGE-LOCAL'
+                };
+                
+                emmunition_send_info('SELECTION_CHANGE',msg_payload);  
+            }          
+        }
+        catch (ex) {
+        }
+    } 
+    
+     /*
+    +---------------------------------------------------------
+    |Activity handler for Typing Speed and Check for Autofill
+    +---------------------------------------------------------
+    */
+    var pasteCheck=0;
+    var x = [];
+    var iLastTime = 0;
+    var iTime = 0;
+    var iTotal = 0;
+    var iKeys = 0;
+    var a ;
+    var k ; 
+    var pause=0;  
+    var vowels=0; 
+    var numerics=0;
+    var adjGrp1 = [81,87,69,82,84,65,83,68,70,90,88,67,86,89,71];
+    var adjGrp2 = [80,85,73,79,76,75,74,72,66,77,78,89,71] 
+    var numArray = [48,49,50,51,52,53,54,55,56,57,97,98,99,100,101,102,103,104,105];
+    var otherkeys= [8,9,20,192,16,17,18,13,98,144];
+    var backspace=0;
+    var totalkey=0;
+    var totaltime=0;
+    var inputChar = [];
+    var langdic = {
+        "ara" : /[\u0600-\u06FF]/,
+        "per" : /[\u0750-\u077F]/,
+        "Heb" : /[\u0590-\u05FF]/,
+        "Syr" : /[\u0700-\u074F]/,
+        "Ben" : /[\u0980-\u09FF]/,
+        "Eth" : /[\u1200-\u137F]/,
+        "Gre&Cop" : /[\u0370-\u03FF]/,
+        "CJK" : /[\u30A0-\u30FF]/,
+        "Geo" : /[\u10A0-\u10FF]/,
+        "Th" : /[\u0E00-\u0E7F]/,
+        "en" : /^[a-zA-Z]+$/
+        //ad ot la
+    };
+    var keyLayout = '';
+    function emmunition_check_autofill() { 
+        var checkFill = 0;
+        setTimeout(function(){
+            var v =  document.getElementsByTagName("input")[0];
+            if(v){
+                if(v.value){ 
+                    if(v.value.length > 3) {
+                        checkFill = checkFill + 1;
+                    }
+                }
+            }
+            var w =  document.getElementsByTagName("input")[1];
+            if(w){
+                if(w.value){
+                    if(w.value.length > 3) {
+                    	checkFill = checkFill + 1;
+                    }
+                }
+            }
+            var x = document.getElementsByTagName("input")[2];
+            if(x){
+                if(x.value){
+                    if(x.value.length > 3) {
+                    	checkFill = checkFill + 1;   
+		    }
+                }
+            
+            }
+            var y =  document.getElementsByTagName("input")[3];
+            if(y){
+                if(y.value){
+                    if(y.value.length > 3) {
+                        checkFill = checkFill + 1;
+                    }
+                }
+            }
+            var z =  document.getElementsByTagName("input")[4];
+            if(z){
+                if(z.value){
+                    if(z.value.length >3) {
+                    	checkFill = checkFill + 1;
+                    }
+                }
+            } 
+            if(checkFill > 1){
+                msg_payload = {
+                    Auto_Fill : "True"
+                }
+                emmunition_send_info('AUTO_FILL',msg_payload);
+            } else { 
+
+                msg_payload = {
+                    Auto_Fill : "False"
+                } 
+                emmunition_send_info('AUTO_FILL',msg_payload);
+            } 
+        },5000); 
+        startTime = new Date().getTime();
+        var inputs = document.getElementsByTagName('input');
+        for (var i=0; i< inputs.length; i++){
+           inputs[i].onkeydown = function(e){
+               if(!e.ctrlKey){ 
+                   iTime = new Date().getTime();
+                   if(k != this.name){ 
+                       if(k == undefined) {  var path = getElementXPath(this);  k = path; }
+                       
+                       k = this.name ;
+                       pasteCheck = 0;
+                      startTime = iTime;
+                      /* totaltime = iTime - startTime;
+                       msg_payload = { 
+                           Element_name : k,
+                           //data :{"allSpeed":x,"Pause":pause,"vowels":vowels,"numerics":numerics,"backspace":backspace,"totalkey":totalkey},
+                           data :{"allSpeed":x,"Pause":pause,"backspace":backspace,"totaltimespent":totaltime,"time":iTime},
+                           scope : 'PAGE-LOCAL'
+                       } 
+                       emmunition_send_info('TYPING_SPEED',msg_payload);
+                       pasteCheck = 0;
+                       k = this.name ;
+                       x=[];
+                       //iLastTime = 0;
+                       //iTime = 0;
+                       iTotal = 0;
+                       iTime = new Date().getTime();startTime = iTime;
+                       iKeys = 1;
+                       pause = 0;
+                       totalkey=1;
+                       backspace=0;
+                       totaltime=0;*/
+                   }
+                   
+                   if(e.keyCode == 8) {
+                      backspace = backspace + 1;
+                      totalkey--;
+                      
+                   }
+                   
+                   if(!otherkeys.includes(e.keyCode)) {
+                      totalkey = totalkey+1;
+                   } 
+                   
+                   
+                   
+                   if(iTime - iLastTime > 5000 ) {iKeys=0;iTotal=0; ilastTime = 0; }
+                   //if(iTotal > 8000 ) { console.log('itotal');iTotal=0;iKeys=0 }
+                   if (iLastTime != 0) {
+                       //console.log("Ilasttime not zero");
+                       iKeys++;
+                       iTotalq = iTime - iLastTime;
+                      // iTotal += iTotalq;
+                       //console.log("ITIME:::",iTime,iLastTime);
+                       if(iTotalq < 1500){
+                           //console.log("iTOtal",iTotal);
+                           //console.log("iTOtalq:::",iTotalq);
+                           //console.log("iKeys:::",e.keyCode);
+                          // if(e.keyCode == 97 || e.keyCode == 101 || e.keyCode == 105 || e.keyCode == 111 || e.keyCode == 117){
+                          //     vowels = vowels+1;
+	                  // } 
+                           iTotal += iTotalq;
+                           //var charPmin = Math.round(iKeys / iTotal * 6000, 2);
+                           var charPmin = Math.round((iKeys / iTotal) * 60000, 2);
+                           x.push(charPmin);
+                       } else {
+                           //console.log("SADSADSAD::::",x);
+                           
+                           pause = pause+1;
+                           x.push('P');
+                       }
+                   }
+                   iLastTime = iTime;
+                   //console.log("XXXXX::",x);
+                   //console.log(x);
+               } 
+           };    
+           //inputs[i].onfocusout = function(){
+           inputs[i].addEventListener('focusout', function(e) {
+               if(isNaN(this.value)) {
+                   Object.keys(langdic).forEach(function(key) {
+                       if (langdic[key].test(this.value) == true){   //Check Unicode to see which one is true
+                           keyLayout = key ; //print language name if unicode true   
+                       } 
+                   });
+               } else { keyLayout = "eng/num"; }
+               if(pasteCheck == 0){   
+                   if(k == undefined) {  var path = getElementXPath(this);  k = path; }
+                   iTimeq = new Date().getTime();
+                   totaltimeq = iTimeq - startTime;
+                   msg_payload = {  
+                       Element_name : k,
+                       //data :{"allSpeed":x,"Pause":pause,"vowels":vowels,"numerics":numerics,"backspace":backspace,"totalkey":totalkey},
+                       data :{"allSpeed":x,"Pause":pause,"backspace":backspace,"totaltimespent":totaltimeq,"time":iTimeq,"keyboardLayout":keyLayout},
+                       scope : 'PAGE-LOCAL'
+                   } 
+                   emmunition_send_info('TYPING_SPEED',msg_payload);
+                   //startTime = iTimeq;
+                   pasteCheck = 0;
+                       k = this.name ;
+                       x=[];
+                       //iLastTime = 0;
+                       //iTime = 0;
+                       iTotal = 0;
+                       iKeys = 1;
+                       pause = 0;
+                       totalkey=1;
+                       backspace=0;
+                       totaltime=0;
+               }
+           }); 
+           
+        }
+    }
+    
+    /* 
+     +---------------------------------------------------------
+    |Activity handler for Paste
+    +---------------------------------------------------------
+    */
+    function myFunctionPaste(e) {
+	var pasteTarget  = e.target.name || e.target.id || e.target.tagName;
+         try { 
+            if (window.clipboardData && window.clipboardData.getData) { // IE
+                pastedText = window.clipboardData.getData('Text');
+            } else if (e.clipboardData && e.clipboardData.getData) {
+                pastedText = e.clipboardData.getData('text/plain');
+            } else { pastedText = ""; }
+            var time = Date.now();
+            msg_payload = {
+                paste_by          :"Mouse",
+                element_name      : pasteTarget,
+                time              : time
+            }
+            emmunition_send_info('PASTE_DATA',msg_payload); 
+            pasteCheck = 1;  
+        }
+        catch (ex) { 
+            console.log(ex);
+        }
+        if(navigator.userAgent.search("Firefox") >= 0 ) { 
+            document.removeEventListener("paste", myFunctionPaste,true);
+        } else { 
+            document.removeEventListener("paste", myFunctionPaste);
+        }
+    }
+    function emmunition_handler_paste(e) { 
+       if(e.target){ 
+               emmunition_addEventListener(document, 'paste',myFunctionPaste);
+       }
+
+    }
+ 
+
+    /* 
+     +---------------------------------------------------------
+     |Activity handler for keyboard Paste
+    +---------------------------------------------------------
+    */
+    function emmunition_handler_key_paste(e){
+        if(navigator.userAgent.search("Firefox") >= 0 ) {
+            document.removeEventListener("paste", myFunctionPaste,true);
+        } else {
+            document.removeEventListener("paste", myFunctionPaste);
+        }
+        var tag = e.target.tagName.toLowerCase(); 
+        if(e.keyCode == 9 || e.keyCode == 13) { 
+            iLastTime=0;
+        }  
+        if(tag =='input' || tag == 'textarea') {
+             
+            
+            try {
+                if(e.ctrlKey == true && e.keyCode == 86) {
+                    var pasteTarget  = e.target.name || e.target.id || e.target.tagName;
+                    var pastedText;
+                    if (window.clipboardData && window.clipboardData.getData) { // IE
+                        pastedText = window.clipboardData.getData('Text');
+                    } else if (e.clipboardData && e.clipboardData.getData) {
+                        pastedText = e.clipboardData.getData('text/plain');
+                    } else { pastedText = ""; }
+                    pastedTextLength = pastedText.length;
+                    var time = Date.now();
+                    msg_payload = {
+                        paste_by          : "Keyboard", 
+                        element_name      : pasteTarget,
+                        time              : time
+                   }
+
+                   emmunition_send_info('PASTE_DATA',msg_payload);
+                   pasteCheck = 1;
+                }/* else {
+                    iTime = new Date().getTime();
+                    if(iTime - iLastTime > 5000 ) { ilastTime = 0;arrayOfSpeed = [] }                
+                    if(iTotal > 20000 ) { iTotal=0;iKeys=0 }                
+                    console.log("ilasOLD TIEM:",iLastTime);
+                    if(iLastTime != 0) { 
+                        iKeys++;
+                        iTotal += iTime - iLastTime;
+                        console.log('ikeys::',iKeys,'iTotals::',iTotal);
+                        var charPmin = Math.round(iKeys / iTotal * 6000, 2);
+                        arrayOfSpeed.push(charPmin);     
+                    } 
+                    iLastTime = iTime;
+                    console.log("ilasNEwt TIEM:",iLastTime);
+               
+                    arrayOfSpeed[0] = 0;
+                    var arrayData = arrayOfSpeed.toString();
+                    msg_payload = {
+                        data  : arrayData,
+                        scope : 'PAGE-LOCAL'
+                    };
+                    emmunition_send_info('TYPING_SPEED',msg_payload);
+                } */
+
+            }
+            catch (ex) { console.log(ex);
+            }
+        }   
+    
+    }
+
+    /*
+    +---------------------------------------------------------
+    |Activity handler scrolling
+    +---------------------------------------------------------
+    */
+    function emmunition_handler_onscroll(e) {
+
+        var y   = emmunition_get_scroll_top();
+        var tot = emmunition_get_doc_height();
+        var h   = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+
+        if (tot != NaN) if (tot > 0) {
+            var percent = (y+h)*100/tot;
+            if (emmunition_once_scroll_50 == false && percent >= 50) {
+                emmunition_once_scroll_50 = true;
+                emmunition_send_info('SCROLL_50','NA')
+            }
+            if (emmunition_once_scroll_75 == false && percent >= 75) {
+                emmunition_once_scroll_75 = true;
+                emmunition_send_info('SCROLL_75','NA')
+            }
+            if (emmunition_once_scroll_100 == false && percent >= 95) {
+                emmunition_once_scroll_100 = true;
+                emmunition_send_info('SCROLL_100','NA')
+
+            }
+        }
+    }
+
+    /*
+    +---------------------------------------------------------
+    |Common function to detect active user
+    |Logic : 3 activities atleast 3 seconds apart
+    +---------------------------------------------------------
+    */
+    function emmunition_detect_activity() {
+
+        //Before reseting the idle clock, check to see if active user
+        //Make sure that there is atleast 3 seconds gap
+        if (emmunition_once_active == false) {
+            if (emmunition_seconds > 3) {
+                if (emmunition_activity_counter > 2) {
+                    emmunition_once_active = true;
+                    emmunition_send_info('ACTIVE_USER','NA')
+                }
+                emmunition_activity_counter++;
+            }
+        }
+        emmunition_seconds = 0;
+    }
+    /*
+    +---------------------------------------------------------
+    |MD5 utility function
+    |Used to create a hash for the page url to track
+    |Unique users
+    +---------------------------------------------------------
+    */
+    var emmunition_MD5 = function (string) {
+
+            function RotateLeft(lValue, iShiftBits) {
+                return (lValue << iShiftBits) | (lValue >>> (32 - iShiftBits));
+            }
+
+            function AddUnsigned(lX, lY) {
+                var lX4, lY4, lX8, lY8, lResult;
+                lX8 = (lX & 0x80000000);
+                lY8 = (lY & 0x80000000);
+                lX4 = (lX & 0x40000000);
+                lY4 = (lY & 0x40000000);
+                lResult = (lX & 0x3FFFFFFF) + (lY & 0x3FFFFFFF);
+                if (lX4 & lY4) {
+                    return (lResult ^ 0x80000000 ^ lX8 ^ lY8);
+                }
+                if (lX4 | lY4) {
+                    if (lResult & 0x40000000) {
+                        return (lResult ^ 0xC0000000 ^ lX8 ^ lY8);
+                    } else {
+                        return (lResult ^ 0x40000000 ^ lX8 ^ lY8);
+                    }
+                } else {
+                    return (lResult ^ lX8 ^ lY8);
+                }
+            }
+
+            function F(x, y, z) {
+                return (x & y) | ((~x) & z);
+            }
+
+            function G(x, y, z) {
+                return (x & z) | (y & (~z));
+            }
+
+            function H(x, y, z) {
+                return (x ^ y ^ z);
+            }
+
+            function I(x, y, z) {
+                return (y ^ (x | (~z)));
+            }
+
+            function FF(a, b, c, d, x, s, ac) {
+                a = AddUnsigned(a, AddUnsigned(AddUnsigned(F(b, c, d), x), ac));
+                return AddUnsigned(RotateLeft(a, s), b);
+            };
+
+            function GG(a, b, c, d, x, s, ac) {
+                a = AddUnsigned(a, AddUnsigned(AddUnsigned(G(b, c, d), x), ac));
+                return AddUnsigned(RotateLeft(a, s), b);
+            };
+
+            function HH(a, b, c, d, x, s, ac) {
+                a = AddUnsigned(a, AddUnsigned(AddUnsigned(H(b, c, d), x), ac));
+                return AddUnsigned(RotateLeft(a, s), b);
+            };
+
+            function II(a, b, c, d, x, s, ac) {
+                a = AddUnsigned(a, AddUnsigned(AddUnsigned(I(b, c, d), x), ac));
+                return AddUnsigned(RotateLeft(a, s), b);
+            };
+
+            function ConvertToWordArray(string) {
+                var lWordCount;
+                var lMessageLength = string.length;
+                var lNumberOfWords_temp1 = lMessageLength + 8;
+                var lNumberOfWords_temp2 = (lNumberOfWords_temp1 - (lNumberOfWords_temp1 % 64)) / 64;
+                var lNumberOfWords = (lNumberOfWords_temp2 + 1) * 16;
+                var lWordArray = Array(lNumberOfWords - 1);
+                var lBytePosition = 0;
+                var lByteCount = 0;
+                while (lByteCount < lMessageLength) {
+                    lWordCount = (lByteCount - (lByteCount % 4)) / 4;
+                    lBytePosition = (lByteCount % 4) * 8;
+                    lWordArray[lWordCount] = (lWordArray[lWordCount] | (string.charCodeAt(lByteCount) << lBytePosition));
+                    lByteCount++;
+                }
+                lWordCount = (lByteCount - (lByteCount % 4)) / 4;
+                lBytePosition = (lByteCount % 4) * 8;
+                lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80 << lBytePosition);
+                lWordArray[lNumberOfWords - 2] = lMessageLength << 3;
+                lWordArray[lNumberOfWords - 1] = lMessageLength >>> 29;
+                return lWordArray;
+            };
+
+            function WordToHex(lValue) {
+                var WordToHexValue = "",
+                    WordToHexValue_temp = "",
+                    lByte, lCount;
+                for (lCount = 0; lCount <= 3; lCount++) {
+                    lByte = (lValue >>> (lCount * 8)) & 255;
+                    WordToHexValue_temp = "0" + lByte.toString(16);
+                    WordToHexValue = WordToHexValue + WordToHexValue_temp.substr(WordToHexValue_temp.length - 2, 2);
+                }
+                return WordToHexValue;
+            };
+
+            function Utf8Encode(string) {
+                string = string.replace(/\r\n/g, "\n");
+                var utftext = "";
+
+                for (var n = 0; n < string.length; n++) {
+
+                    var c = string.charCodeAt(n);
+
+                    if (c < 128) {
+                        utftext += String.fromCharCode(c);
+                    } else if ((c > 127) && (c < 2048)) {
+                        utftext += String.fromCharCode((c >> 6) | 192);
+                        utftext += String.fromCharCode((c & 63) | 128);
+                    } else {
+                        utftext += String.fromCharCode((c >> 12) | 224);
+                        utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+                        utftext += String.fromCharCode((c & 63) | 128);
+                    }
+
+                }
+
+                return utftext;
+            };
+
+            var x = Array();
+            var k, AA, BB, CC, DD, a, b, c, d;
+            var S11 = 7,
+                S12 = 12,
+                S13 = 17,
+                S14 = 22;
+            var S21 = 5,
+                S22 = 9,
+                S23 = 14,
+                S24 = 20;
+            var S31 = 4,
+                S32 = 11,
+                S33 = 16,
+                S34 = 23;
+            var S41 = 6,
+                S42 = 10,
+                S43 = 15,
+                S44 = 21;
+
+            string = Utf8Encode(string);
+
+            x = ConvertToWordArray(string);
+
+            a = 0x67452301;
+            b = 0xEFCDAB89;
+            c = 0x98BADCFE;
+            d = 0x10325476;
+
+            for (k = 0; k < x.length; k += 16) {
+                AA = a;
+                BB = b;
+                CC = c;
+                DD = d;
+                a = FF(a, b, c, d, x[k + 0], S11, 0xD76AA478);
+                d = FF(d, a, b, c, x[k + 1], S12, 0xE8C7B756);
+                c = FF(c, d, a, b, x[k + 2], S13, 0x242070DB);
+                b = FF(b, c, d, a, x[k + 3], S14, 0xC1BDCEEE);
+                a = FF(a, b, c, d, x[k + 4], S11, 0xF57C0FAF);
+                d = FF(d, a, b, c, x[k + 5], S12, 0x4787C62A);
+                c = FF(c, d, a, b, x[k + 6], S13, 0xA8304613);
+                b = FF(b, c, d, a, x[k + 7], S14, 0xFD469501);
+                a = FF(a, b, c, d, x[k + 8], S11, 0x698098D8);
+                d = FF(d, a, b, c, x[k + 9], S12, 0x8B44F7AF);
+                c = FF(c, d, a, b, x[k + 10], S13, 0xFFFF5BB1);
+                b = FF(b, c, d, a, x[k + 11], S14, 0x895CD7BE);
+                a = FF(a, b, c, d, x[k + 12], S11, 0x6B901122);
+                d = FF(d, a, b, c, x[k + 13], S12, 0xFD987193);
+                c = FF(c, d, a, b, x[k + 14], S13, 0xA679438E);
+                b = FF(b, c, d, a, x[k + 15], S14, 0x49B40821);
+                a = GG(a, b, c, d, x[k + 1], S21, 0xF61E2562);
+                d = GG(d, a, b, c, x[k + 6], S22, 0xC040B340);
+                c = GG(c, d, a, b, x[k + 11], S23, 0x265E5A51);
+                b = GG(b, c, d, a, x[k + 0], S24, 0xE9B6C7AA);
+                a = GG(a, b, c, d, x[k + 5], S21, 0xD62F105D);
+                d = GG(d, a, b, c, x[k + 10], S22, 0x2441453);
+                c = GG(c, d, a, b, x[k + 15], S23, 0xD8A1E681);
+                b = GG(b, c, d, a, x[k + 4], S24, 0xE7D3FBC8);
+                a = GG(a, b, c, d, x[k + 9], S21, 0x21E1CDE6);
+                d = GG(d, a, b, c, x[k + 14], S22, 0xC33707D6);
+                c = GG(c, d, a, b, x[k + 3], S23, 0xF4D50D87);
+                b = GG(b, c, d, a, x[k + 8], S24, 0x455A14ED);
+                a = GG(a, b, c, d, x[k + 13], S21, 0xA9E3E905);
+                d = GG(d, a, b, c, x[k + 2], S22, 0xFCEFA3F8);
+                c = GG(c, d, a, b, x[k + 7], S23, 0x676F02D9);
+                b = GG(b, c, d, a, x[k + 12], S24, 0x8D2A4C8A);
+                a = HH(a, b, c, d, x[k + 5], S31, 0xFFFA3942);
+                d = HH(d, a, b, c, x[k + 8], S32, 0x8771F681);
+                c = HH(c, d, a, b, x[k + 11], S33, 0x6D9D6122);
+                b = HH(b, c, d, a, x[k + 14], S34, 0xFDE5380C);
+                a = HH(a, b, c, d, x[k + 1], S31, 0xA4BEEA44);
+                d = HH(d, a, b, c, x[k + 4], S32, 0x4BDECFA9);
+                c = HH(c, d, a, b, x[k + 7], S33, 0xF6BB4B60);
+                b = HH(b, c, d, a, x[k + 10], S34, 0xBEBFBC70);
+                a = HH(a, b, c, d, x[k + 13], S31, 0x289B7EC6);
+                d = HH(d, a, b, c, x[k + 0], S32, 0xEAA127FA);
+                c = HH(c, d, a, b, x[k + 3], S33, 0xD4EF3085);
+                b = HH(b, c, d, a, x[k + 6], S34, 0x4881D05);
+                a = HH(a, b, c, d, x[k + 9], S31, 0xD9D4D039);
+                d = HH(d, a, b, c, x[k + 12], S32, 0xE6DB99E5);
+                c = HH(c, d, a, b, x[k + 15], S33, 0x1FA27CF8);
+                b = HH(b, c, d, a, x[k + 2], S34, 0xC4AC5665);
+                a = II(a, b, c, d, x[k + 0], S41, 0xF4292244);
+                d = II(d, a, b, c, x[k + 7], S42, 0x432AFF97);
+                c = II(c, d, a, b, x[k + 14], S43, 0xAB9423A7);
+                b = II(b, c, d, a, x[k + 5], S44, 0xFC93A039);
+                a = II(a, b, c, d, x[k + 12], S41, 0x655B59C3);
+                d = II(d, a, b, c, x[k + 3], S42, 0x8F0CCC92);
+                c = II(c, d, a, b, x[k + 10], S43, 0xFFEFF47D);
+                b = II(b, c, d, a, x[k + 1], S44, 0x85845DD1);
+                a = II(a, b, c, d, x[k + 8], S41, 0x6FA87E4F);
+                d = II(d, a, b, c, x[k + 15], S42, 0xFE2CE6E0);
+                c = II(c, d, a, b, x[k + 6], S43, 0xA3014314);
+                b = II(b, c, d, a, x[k + 13], S44, 0x4E0811A1);
+                a = II(a, b, c, d, x[k + 4], S41, 0xF7537E82);
+                d = II(d, a, b, c, x[k + 11], S42, 0xBD3AF235);
+                c = II(c, d, a, b, x[k + 2], S43, 0x2AD7D2BB);
+                b = II(b, c, d, a, x[k + 9], S44, 0xEB86D391);
+                a = AddUnsigned(a, AA);
+                b = AddUnsigned(b, BB);
+                c = AddUnsigned(c, CC);
+                d = AddUnsigned(d, DD);
+            }
+
+            var temp = WordToHex(a) + WordToHex(b) + WordToHex(c) + WordToHex(d);
+
+            return temp.toLowerCase();
+    }
+
+    //Export public functions
+    window._emmunition_init = emmunition_init;
+    //Make sure that the socket.io library is loaded before we intialize our library.
+    whenAvailable(function () {
+        //We are doing a Facebook type async load
+        if (window.emmunitionInit) {
+            window.emmunitionInit();
+        }
+    });
+
+    function whenAvailable(callback) {
+        var interval = 50; // ms
+        window.setTimeout(function () {
+            if (isIE) {
+                if (window['io'] &&  window['wgxpath'] && document.body != undefined && document.body != null) {
+                    callback();
+                } else {
+                    window.setTimeout(arguments.callee, interval);
+                }
+            } else {
+                if (window['io'] && document.body != undefined && document.body != null) {
+                    callback();
+                } else {
+                    window.setTimeout(arguments.callee, interval);
+                }
+            }
+        }, interval);
+    }
+}(window, document));
+Æxu      _££Í_££ÍBJÆf_Åêu   -:https://uba.elistva.com/resources/emmunition necko:classified 1 security-info FnhllAKWRHGAlo+ESXykKAAAAAAAAAAAwAAAAAAAAEaphjojH6pBabDSgSnsfLHeAAQAAgAAAAAAAAAAAAAAAAAAAAAB4vFIJp5wRkeyPxAQ9RJGKPqbqVvKO0mKuIl8ec8o/uhmCjImkVxP+7sgiYWmMt8F+O2DZM7ZTG6GukivU8OT5gAAAAAAAAVYMIIFVDCCBDygAwIBAgISBM2zgrOT/rS0blQbNZNwdsMaMA0GCSqGSIb3DQEBCwUAMEoxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MSMwIQYDVQQDExpMZXQncyBFbmNyeXB0IEF1dGhvcml0eSBYMzAeFw0yMDA5MjEwNDU3MTRaFw0yMDEyMjAwNDU3MTRaMBoxGDAWBgNVBAMTD3ViYS5lbGlzdHZhLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKITycGE1jUDRX3Rg9YWAkt/kEYZrLasqoeIHScox8FqqQ85NKagCiVZ9InsU+h69oZtTw9C7R7rZNFwNmOEzyG+YKmD2w3eQbYEHtN2tUriFwjrR8TlMPIo1H1XY9/ZE+PaUos2S2qX66tLQNkq+iBvIeGCfh5JhQKj+cQQvIRgF4CJlM+0D8mE18w9qW0bWtzY83g5LjmZs6zcymbVDAXKNGrWCSrehHNsAIIjk1DTyxQ/kQeuqCQS7N7aOJeWSMNNVBUVnhBV7Z6KsRfzr+pWNoMsporL4Jd3S8iFvcbJkcys8mAzMeuwK+Z5tsnw5ShX7+5zscw9PflqVsZclykCAwEAAaOCAmIwggJeMA4GA1UdDwEB/wQEAwIFoDAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAdBgNVHQ4EFgQULhgKRG/wAfiIridg9I6/GGD+V7gwHwYDVR0jBBgwFoAUqEpqYwR93brm0Tm3pkVl7/Oo7KEwbwYIKwYBBQUHAQEEYzBhMC4GCCsGAQUFBzABhiJodHRwOi8vb2NzcC5pbnQteDMubGV0c2VuY3J5cHQub3JnMC8GCCsGAQUFBzAChiNodHRwOi8vY2VydC5pbnQteDMubGV0c2VuY3J5cHQub3JnLzAaBgNVHREEEzARgg91YmEuZWxpc3R2YS5jb20wTAYDVR0gBEUwQzAIBgZngQwBAgEwNwYLKwYBBAGC3xMBAQEwKDAmBggrBgEFBQcCARYaaHR0cDovL2Nwcy5sZXRzZW5jcnlwdC5vcmcwggECBgorBgEEAdZ5AgQCBIHzBIHwAO4AdQCyHgXMi6LNiiBOh2b5K7mKJSBna9r6cOeySVMt74uQXgAAAXSvPNkcAAAEAwBGMEQCIFrKLufIK9mmSuFzpS/IBvgtBe3tNCFs9UXfkLv/Db0PAiBCLAo3onOSwizmTfKPW4+boTZBRkpZrDSGr6cLJhttyQB1AG9Tdqwx8DEZ2JkApFEV/3cVHBHZAsEAKQaNsgiaN9kTAAABdK882UUAAAQDAEYwRAIgGVtI8vT/EVzjnIQSA3Le62Y1gCb9odZmGKm/kGfXgsoCIDGGmIlKDqZwIbyxVhHhWRVjMb1iO7ciMY69t4rEaJdxMA0GCSqGSIb3DQEBCwUAA4IBAQAINUFIpbWhKHjBRQI3Fh0vCxxdjXjHn0glQnT0x72K5MpT1GVnLZz08Dk5iOficg7jtruRyhXXZIiPN175glPLhCWMME7xgkuI2Qx0Qu2FKa4byXChtXuAZi3lwb2AzVFM9q8lLm3ojwJa1vbHczPkBxpwHb1vaUbJRR3WY4dDIHnhP+bvHEr5s86I3/X0eNgD7IMw1/rMzqcFs8AbVk7TcWMyFFKlfKe2pGLi2bFCdRTskZfm1o55jE+c/xcaxfSuEeSPCvoZiqrB1J1jp6Nvw6Oi7TnAi3nj04cD11gfBO1whNqUcZPEVepZ3o7qQpgaQVviODgSFTnsMSn5A1ySwC8AAwAAAAABAQAA request-method GET response-head HTTP/1.1 200 OK
+Server: nginx/1.4.6 (Ubuntu)
+Date: Sun, 01 Nov 2020 07:02:14 GMT
+Content-Type: application/javascript
+X-Powered-By: Express
+access-control-allow-origin: *
+Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, PATCH, DELETE
+Access-Control-Allow-Headers: Accept, Authorization, Content-Type, X-Requested-With, Range
+Access-Control-Allow-Credentials: true
+Cache-Control: max-age=2592000, public
+Expires: Tue, 01 Dec 2020 07:02:14 GMT
+X-Frame-Options: DENY
+x-content-type-options: nosniff
+strict-transport-security: max-age=31536000; includeSubDomains
+X-XSS-Protection: 1; mode=block
+Content-Security-Policy: default-src 'unsafe-inline' *; font-src 'self' *; img-src 'self' data: *; script-src 'unsafe-inline' 'unsafe-eval' *;
+ uncompressed-len 0   Ðz

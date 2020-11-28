@@ -1,0 +1,591 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=EmulateIE9" /><meta http-equiv="X-UA-Compatible" content="IE=EmulateIE10" /><meta http-equiv="X-UA-Compatible" content="chrome=1" /><link id="ctl00_lnkFavicon" rel="shortcut icon" href="../Images/favicon.ico" type="image/x-icon" /><link id="ctl00_lnkFavicon1" rel="icon" href="../Images/favicon.ico" type="image/ico" /><link rel="stylesheet" href="../css/Style.css" />
+    <script src="../Scripts/Validations.js" type="text/javascript" defer></script>
+    <script type="text/javascript" src="../Scripts/jquery-1.9.0.min.js" defer></script>
+    <script type="text/javascript" src="../Scripts/jquery-1.9.1.ui.min.js" defer></script>
+    <script type="text/javascript" src="../Scripts/gridviewScroll.js" defer></script>
+    <link href="../css/GridviewScroll.css" rel="stylesheet" />
+    
+    <script src="../Scripts/jquery.min.js" type="text/javascript"></script>
+    <script>
+        //Disable Ctrl+A and Ctrl+S
+        $(document).bind('keydown', function (e) {
+            if ((e.ctrlKey && e.which == 83) || (e.ctrlKey && e.which == 65)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    </script>
+    
+    <script type="text/javascript">
+        function pageLoad() {
+            $('#ctl00_ccMain_grdDistricts').gridviewScroll({
+                width: 980,
+                height: 400,
+                freezesize: 4,
+                headerrowcount: 1,
+                arrowsize: 30,
+                varrowtopimg: "../Images/arrowvt.png",
+                varrowbottomimg: "../Images/arrowvb.png",
+                harrowleftimg: "../Images/arrowhl.png",
+                harrowrightimg: "../Images/arrowhr.png"
+            });
+        } 
+               
+
+               
+    </script>
+<title>
+
+</title></head>
+<body style="margin: 0px; padding: 0px; background-repeat: no-repeat" oncontextmenu="return false;" ondragstart="return false;" draggable="false" oncopy="return false;" oncut="retrun false;" onpaste="return false;"  onmousemove="unFocus();">
+
+    <form name="aspnetForm" method="post" action="./AvailableStockyards.aspx" onsubmit="javascript:return WebForm_OnSubmit();" id="aspnetForm" autocomplete="off">
+<div>
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+<input type="hidden" name="__LASTFOCUS" id="__LASTFOCUS" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="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" />
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['aspnetForm'];
+if (!theForm) {
+    theForm = document.aspnetForm;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+<script src="https://ajax.aspnetcdn.com/ajax/4.6/1/WebForms.js" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+window.WebForm_PostBackOptions||document.write('<script type="text/javascript" src="/TSSandPortal/WebResource.axd?d=8h43605tfC9mkKgKxI0IVP3Tv9B_wjKVL9cSu0aKzkmLIdD8Ttbbr2qS7CBAQWGl31z1oAA2CeTTkkxi1NK_tV40e-41&amp;t=636765176300000000"><\/script>');//]]>
+</script>
+
+
+
+<script src="https://ajax.aspnetcdn.com/ajax/4.6/1/WebUIValidation.js" type="text/javascript"></script>
+<script src="/TSSandPortal/ScriptResource.axd?d=Z62mFiocopZkHCqrt-Sj-PRzdO_QQ5U5Y7sOGmgzSfJrq72FbufYgTBxzGGkwRs3mvugUe6bOJHDlkQ_UGIxG--5Fg-KwV7_5SJySRuz7Cd21F9w0&amp;t=3a1336b1" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+(window.Sys && Sys._Application && Sys.Observer)||document.write('<script type="text/javascript" src="/TSSandPortal/ScriptResource.axd?d=Z62mFiocopZkHCqrt-Sj-PRzdO_QQ5U5Y7sOGmgzSfJrq72FbufYgTBxzGGkwRs3mvugUe6bOJHDlkQ_UGIxG--5Fg-KwV7_5SJySRuz7Cd21F9w0&t=3a1336b1"><\/script>');//]]>
+</script>
+
+<script src="/TSSandPortal/ScriptResource.axd?d=7ppATK1ktKhlv0am-fHCTQyQBbagy4knvfo13Z7jOj_19kCBC1xygUhBH5xEXThjs0XAh8jUh3yVI2N5dyQKYlkZSS2sYENoJ61no5_MKVzhUUlac35VHkup5gO7Mt_F5xGAMw2&amp;t=3a1336b1" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+(window.Sys && Sys.WebForms)||document.write('<script type="text/javascript" src="/TSSandPortal/ScriptResource.axd?d=7ppATK1ktKhlv0am-fHCTQyQBbagy4knvfo13Z7jOj_19kCBC1xygUhBH5xEXThjs0XAh8jUh3yVI2N5dyQKYlkZSS2sYENoJ61no5_MKVzhUUlac35VHkup5gO7Mt_F5xGAMw2&t=3a1336b1"><\/script>');function WebForm_OnSubmit() {
+if (typeof(ValidatorOnSubmit) == "function" && ValidatorOnSubmit() == false) return false;
+return true;
+}
+//]]>
+</script>
+
+<div>
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="701F4A03" />
+	<input type="hidden" name="__VIEWSTATEENCRYPTED" id="__VIEWSTATEENCRYPTED" value="" />
+	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="P4/i1G1nVLidtcNazReZJox00clHJTGKdTr5OtvYZlAOKdygWIfT9k3h6wCecYN0OKNeqHNKbMmMiTKqLUWSXV16iqU9X1PwZMSZq5dk9folPRZcCLFmsd0ctkgsSD/7DIr5gpwyClaZy7hDZom2smDptYn6IAwvSJJCSnicdPgheADJmCBvkYHCnOWpxoE5cYYnVEBuHKvY8Ra3/P1pZ8/qR8tZKROQWEe5cMo3oX36MyEQ3mXsflqQHLthujdg5QhH1CKvJ0QcyERfBzU2j5onwQ0CUKHNaiKa5XzRFXmfVyZ4zcZEdQumnFSAd2oIcisiCJ1dQyv2eXnh6RKqCD4IE1dFVvbbJJkZ6bYODFVPQZyfBJwKpJQA94SnQjxfcUe8t3AK2UoJP5q4LMQHbXUPu5G62vjd4SbQMEthXruxOPDH6mYXWNLSr2GZyPEsMPmtJP9ZflIKfsWKBiKyfZw2R27Qcr90VKHOYT9TdsckItkFJDOlkJsOyUeDC/sbwbj6O2uW81pR3pkZZ/NzSmL51CRXAFhbGHtUfk+MqlTUwVTFH+GE6PPC5qEkBpFsJLhYncuqIaipF1Fk7z+HJjj7rvk4un0xoMrY2LsaGXB9GQQyqUxUuEOlZ8lUzJFuD8LvhGoQo1X14aDMU1iVBqmNZuU3Jh8FhnGktKm9aNx+pv8Vw3n48YppCeoBdMdHQA5sFA+i3Mlqv1/pCIbAlq6qpcFJjf/IeHcdn40Lpeskazm2nB1C6a7A/BmSv4WCZq51n1Txz2DuC5D5sB1cVFP5BZTfhGZJDx68GO60jB+RX/H/7urIjoRIl+HPvj+OtjyhTnGW9lDf3A+EB+jwYoHbzTs=" />
+</div>
+    <script type="text/javascript">
+//<![CDATA[
+Sys.WebForms.PageRequestManager._initialize('ctl00$scr', 'aspnetForm', ['tctl00$ccMain$updtmodalpop',''], [], ['ctl00$ccMain$ddlDistricts',''], 90, 'ctl00');
+//]]>
+</script>
+
+    <table width="1002px" border="0" cellspacing="0" cellpadding="0" align="center" style="border-left: 4px solid #a00053;
+        border-right: 4px solid #a00053; background-color: #FFFFFF">
+        <div class="header_top" style="width: 1010px; margin: 0px auto; padding: 0px 0px 5px 0px;">
+            <div class="toplinks">
+                <a href="#" id="btn-decrease">A-</a> <a href="#" id="btn-orig">A</a> <a href="#"
+                    id="btn-increase">A+</a> <a href="#" class="color" style="background: #000;">A</a>
+                <a href="#" class="nocolor" style="color: #0b64ab; background: #fff">A</a>
+            </div>
+            <div class="pull-right">
+                <ul class="top_list" style="margin-top: 2px;">
+                    <li><a href="">
+                        <input type="text" placeholder="Search" style="margin-top: 0px; height: 23px !important;
+                            margin-left: 15px;"></a></li>
+                    <li style=""><a href="#menuskip" style="color: #fff">Skip to Content </a></li>
+                    <li><a href="">
+                        <img src="../Images/facebook3.png" /></a></li>
+                    <li><a href="">
+                        <img src="../Images/twitter3.png" /></a></li>
+                    <li><a href="">
+                        <img src="../Images/youtube3.png" /></a></li>
+                </ul>
+            </div>
+        </div>
+        <tr>
+            <td>
+                
+                <img src="../Images/HDR.png" alt="TSMDC" />
+            </td>
+        </tr>
+        <tr>
+            <td valign="top">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" align="center">
+                    <tr>
+                        <td width="65px" valign="top" height="36px">
+                            <a href="../Masters/Home.aspx">
+                                <img src="../Images/home.png" width="63px" height="36px" /></a>
+                        </td>
+                        <td height="36px" width="100%" style="border: 0px; padding: 0px">
+                            <div class="drop">
+                                <ul class="menuH" id="menuskip">
+                                    <li><a href="http://tsmdc.telangana.gov.in/TSMDC/login.mdc" target="_blank">TSMDC Home</a></li>
+                                    <li><a href="#"><span>REGISTRATIONS</span></a>
+                                        <ul>
+                                            <li><a href="https://sand.telangana.gov.in/TSSandPortal/Reports/CustomerRegistration.aspx">
+                                                CUSTOMER REGISTRATION</a></li>
+                                            <li><a href="https://sand.telangana.gov.in/TSSandPortal/Reports/CustomersRegisteredList.aspx">
+                                                CUSTOMERS REGISTERED LIST</a></li>
+                                            <li><a href="https://sand.telangana.gov.in/TSSandPortal/Reports/CustomerVehicleRegistration.aspx">
+                                                VEHICLE REGISTRATION</a></li>
+                                            <li><a href="https://sand.telangana.gov.in/TSSandPortal/Reports/CustomerVehicleRegistrationUpdateByCustomer.aspx">
+                                                VEHICLE REGISTRATION UPDATION</a></li>
+                                         
+                                            <li><a href="https://sand.telangana.gov.in/TSSandPortal/Reports/CustomerVehicleRegisteredList.aspx">
+                                                VEHICLES REGISTERED LIST</a></li>
+                                        </ul>
+                                    </li>
+                                    <li><a href="#"><span>BOOKINGS</span></a>
+                                        <ul>
+                                           
+                                            <li><a href="https://sand.telangana.gov.in/TSSandPortal/Reports/TrackOrder.aspx?TS=O">
+                                                TRACK YOUR ORDER</a></li>
+                                            <li><a href="https://sand.telangana.gov.in/TSSandPortal/Reports/TrackVehicleNo.aspx">
+                                                TRACK YOUR ORDERS WITH MOBILE/VEHICLE</a></li>
+                                            
+                                        </ul>
+                                    </li>
+                                    <li><a href="#"><span>INTER STATE SAND TRANSPORTATION</span></a>
+                                        <ul>
+                                            <li><a href="https://sand.telangana.gov.in/TSSandInterState/Order/INTOrders.aspx">INTER
+                                                STATE SAND TRANSPORTATION RECEIPT</a></li>
+                                            <li><a href="https://sand.telangana.gov.in/TSSandInterState/Prints/PrintReceipt.aspx">
+                                                INTER STATE RECEIPT RE-PRINT</a></li>
+                                            <li><a href="https://sand.telangana.gov.in/TSSandInterState/Reports/INTTrackOrder.aspx">
+                                                INTER STATE TRACK ORDER</a></li>
+                                            <li><a href="https://sand.telangana.gov.in/TSSandInterState/Reports/ReportSandSales.aspx">
+                                                INTER STATE ORDER DETAILS</a></li>
+                                            <li><a href="https://sand.telangana.gov.in/TSSandInterState/Reports/INTTrackOrderByMobile.aspx">
+                                                INTER STATE ORDERS WITH MOBILE/VEHICLE </a></li>
+                                        </ul>
+                                    </li>
+                                    <li><a href="#"><span>REPORTS</span></a>
+                                        <ul>
+                                            <li><a href="https://sand.telangana.gov.in/TSSandPortal/Reports/ReportSandSales.aspx">
+                                                SAND ORDER DETAILS</a></li>
+                                        </ul>
+                                    </li>
+                                    <li><a href="#"><span>HELP</span></a>
+                                        <ul>
+                                            
+                                            <li><a href="https://sand.telangana.gov.in/TSSandPortal/Reports/AvailableStockyards.aspx">
+                                                STOCK YARDS</a></li>
+                                           
+                                        </ul>
+                                    </li>
+                                    <li><a href="https://sand.telangana.gov.in/TSSandPortal/Masters/OTSLogin.aspx">OTS/COURT
+                                        CASES</a></li>
+
+                                         <li><a href="#"><span>TENDERS</span></a>
+                                        <ul>
+                                    <li><a href="https://sand.telangana.gov.in/TSSandPortal/Reports/TenderDetails.aspx">
+                                       NEW TENDERS</a></li>
+                                       <li><a href="https://sand.telangana.gov.in/TSSandPortal/Reports/SubStockyardVehicleRegistration.aspx">
+                                     EMPANELMENT OF VEHICLES</a></li>
+                                      <li><a href="https://sand.telangana.gov.in/TSSandPortal/Reports/SubStockyardVehicleRegPrint.aspx">
+                                     EMPANELMENT OF VEHICLES PRINT</a></li>
+                                        </ul></li>
+
+                                    
+                                    <li><a href="https://sand.telangana.gov.in/TSSandInterState/Masters/Home.aspx">CHECK POST</a></li>
+                                    <li><a href="https://sand.telangana.gov.in/TSSandPortal/Bulk/BulkLogin.aspx">GOVT WORKS</a></li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td style="min-height: 390px" valign="top">
+                
+    <div id="ctl00_ccMain_UpdateProgress1" style="display:none;">
+	
+            <div class="modal">
+                <div class="center">
+                    <div id="loading" >
+                    </div>
+                </div>
+            </div>
+        
+</div>
+    <div id="ctl00_ccMain_updtmodalpop">
+	
+          
+            <table class="MainTable" align="center">
+                <tr>
+                    <td class="MainHead">
+                        Stock Yard Details
+                    </td>
+                </tr>
+                <tr>
+                    <td class="TopSearch">
+                        <table width="100%">
+                            <tr>
+                                <td width="400px" align="right" class="TopSearchCat">
+                                    District :
+                                </td>
+                                <td align="left">
+                                    <select name="ctl00$ccMain$ddlDistricts" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$ccMain$ddlDistricts\&#39;,\&#39;\&#39;)&#39;, 0)" id="ctl00_ccMain_ddlDistricts" class="Dropdown">
+		<option value="0">All</option>
+		<option value="19">ADILABAD</option>
+		<option value="24">BHADRADRI KOTHAGUDEM</option>
+		<option value="16">HYDERABAD</option>
+		<option value="25">JAGITHYAL</option>
+		<option value="26">JANGAON</option>
+		<option value="27">JAYASHANKAR BHUPALPALLY</option>
+		<option value="28">JOGULAMBA GADWAL</option>
+		<option value="29">KAMAREDDY</option>
+		<option selected="selected" value="20">KARIMNAGAR</option>
+		<option value="22">KHAMMAM</option>
+		<option value="30">KUMARAMBHEEM ASIFABAD</option>
+		<option value="31">MAHABUBABAD</option>
+		<option value="14">MAHABUBNAGAR</option>
+		<option value="32">MANCHERIAL</option>
+		<option value="17">MEDAK</option>
+		<option value="33">MEDCHAL</option>
+		<option value="34">NAGARKURNOOL</option>
+		<option value="23">NALGONDA</option>
+		<option value="35">NIRMAL</option>
+		<option value="18">NIZAMABAD</option>
+		<option value="36">PEDDAPALLI</option>
+		<option value="37">RAJANNA SIRICILLA</option>
+		<option value="15">RANGA REDDY</option>
+		<option value="38">SANGAREDDY</option>
+		<option value="39">SIDDIPET</option>
+		<option value="40">SURYAPET</option>
+		<option value="41">VIKARABAD</option>
+		<option value="42">WANAPARTHY</option>
+		<option value="43">WARANGAL RURAL</option>
+		<option value="21">WARANGAL URBAN</option>
+		<option value="44">YADADRI BHUVANAGIRI</option>
+
+	</select>
+                                    <span id="ctl00_ccMain_rfvDistricts" style="color:Red;visibility:hidden;">Please Select District</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+            <br />
+  <table width="100%">
+                <tr>
+                    <td style="padding-left: 10px;">
+                        <div>
+		<table cellspacing="0" border="0" id="ctl00_ccMain_grdDistricts" style="width:100%;border-collapse:collapse;">
+			<tr class="GridviewScrollHeader">
+				<th align="center" scope="col">S.No<br/><br/>(1)</th><th align="center" scope="col">District<br/><br/>(2)</th><th align="center" scope="col">Mandal<br/><br/>(3)</th><th align="center" scope="col"> Stockyard Name<br/><br/>(4)</th><th align="center" scope="col">Contact Person<br/><br/>(5)</th><th align="center" scope="col">Contact Number<br/><br/>(6)</th><th align="center" scope="col">Address<br/><br/>(7)</th><th align="center" scope="col">Sand Quality<br/><br/>(8)</th><th align="center" scope="col">Sand Price (Rs / Cu M)<br/><br/>(9)</th>
+			</tr><tr class="GridviewScrollItem">
+				<td align="center" style="background-color:#EFEFEF;">
+                                        1
+                                    </td><td align="left" style="background-color:#EFEFEF;">
+                                      KARIMNAGAR
+                                    </td><td align="left" style="background-color:#EFEFEF;">
+                                       Huzurabad
+                                    </td><td align="left" style="background-color:#EFEFEF;">
+                                        <span id="ctl00_ccMain_grdDistricts_ctl02_lblStockyardName">Huzurabad</span>
+                                    </td><td align="left">
+                                        <span id="ctl00_ccMain_grdDistricts_ctl02_lblContactPerson">Jayapal Reddy</span>
+                                    </td><td align="center">
+                                        <span id="ctl00_ccMain_grdDistricts_ctl02_lblContactNo">9441177278</span>
+                                    </td><td align="left">
+                                         <span id="ctl00_ccMain_grdDistricts_ctl02_lbAddress">Huzurabad Village,
+Huzurabad Mandal,
+Karimnagar District.</span>
+                                    </td><td align="left">
+                                         Coarse Sand
+                                    </td><td align="right">
+                                       <span id="ctl00_ccMain_grdDistricts_ctl02_lblunitPrice">1,200.00</span>
+                                                        
+                                    </td>
+			</tr><tr class="GridviewScrollItem">
+				<td align="center" style="background-color:#EFEFEF;">
+                                        2
+                                    </td><td align="left" style="background-color:#EFEFEF;">
+                                      KARIMNAGAR
+                                    </td><td align="left" style="background-color:#EFEFEF;">
+                                       Jammikunta
+                                    </td><td align="left" style="background-color:#EFEFEF;">
+                                        <span id="ctl00_ccMain_grdDistricts_ctl03_lblStockyardName">Jammikunta</span>
+                                    </td><td align="left">
+                                        <span id="ctl00_ccMain_grdDistricts_ctl03_lblContactPerson">Rajesh</span>
+                                    </td><td align="center">
+                                        <span id="ctl00_ccMain_grdDistricts_ctl03_lblContactNo">9618819541</span>
+                                    </td><td align="left">
+                                         <span id="ctl00_ccMain_grdDistricts_ctl03_lbAddress">Sy.No.629,
+Jammikunta Village & Mandal,
+Karimnagar District.</span>
+                                    </td><td align="left">
+                                         Coarse Sand
+                                    </td><td align="right">
+                                       <span id="ctl00_ccMain_grdDistricts_ctl03_lblunitPrice">1,200.00</span>
+                                                        
+                                    </td>
+			</tr><tr class="GridviewScrollItem">
+				<td align="center" style="background-color:#EFEFEF;">
+                                        3
+                                    </td><td align="left" style="background-color:#EFEFEF;">
+                                      KARIMNAGAR
+                                    </td><td align="left" style="background-color:#EFEFEF;">
+                                       Kothapally
+                                    </td><td align="left" style="background-color:#EFEFEF;">
+                                        <span id="ctl00_ccMain_grdDistricts_ctl04_lblStockyardName">Kazipur - LMD Project</span>
+                                    </td><td align="left">
+                                        <span id="ctl00_ccMain_grdDistricts_ctl04_lblContactPerson">E. Santhosh</span>
+                                    </td><td align="center">
+                                        <span id="ctl00_ccMain_grdDistricts_ctl04_lblContactNo">9381743467</span>
+                                    </td><td align="left">
+                                         <span id="ctl00_ccMain_grdDistricts_ctl04_lbAddress">Kazipur village, Kazipur Mandal, Karimnagar District.</span>
+                                    </td><td align="left">
+                                         Coarse Sand
+                                    </td><td align="right">
+                                       <span id="ctl00_ccMain_grdDistricts_ctl04_lblunitPrice">600.00</span>
+                                                        
+                                    </td>
+			</tr><tr class="GridviewScrollItem">
+				<td align="center" style="background-color:#EFEFEF;">
+                                        4
+                                    </td><td align="left" style="background-color:#EFEFEF;">
+                                      KARIMNAGAR
+                                    </td><td align="left" style="background-color:#EFEFEF;">
+                                       Thimmapur
+                                    </td><td align="left" style="background-color:#EFEFEF;">
+                                        <span id="ctl00_ccMain_grdDistricts_ctl05_lblStockyardName">Kothapalli LMD Project</span>
+                                    </td><td align="left">
+                                        <span id="ctl00_ccMain_grdDistricts_ctl05_lblContactPerson">Devender L</span>
+                                    </td><td align="center">
+                                        <span id="ctl00_ccMain_grdDistricts_ctl05_lblContactNo">7702244242</span>
+                                    </td><td align="left">
+                                         <span id="ctl00_ccMain_grdDistricts_ctl05_lbAddress">Kothapalli sand stockyard,
+Sy.No. 228/1, 233, 234, 240 & 241,Kothapally village, Thimmapur Mandal,</span>
+                                    </td><td align="left">
+                                         Coarse Sand
+                                    </td><td align="right">
+                                       <span id="ctl00_ccMain_grdDistricts_ctl05_lblunitPrice">600.00</span>
+                                                        
+                                    </td>
+			</tr>
+		</table>
+	</div>
+                    </td>
+                </tr>
+            </table>
+            <br />
+            <br />
+            <table class="MainTable" align="center">
+                <tr id="ctl00_ccMain_trPaging">
+		<td align="center" valign="middle" class="TopSearch" style="padding: 0px  6px; background-color: #efefef;">
+                        <table width="100%">
+                            <tr>
+                                <td width="300px">
+                                </td>
+                                <td class="TopSearchCat" width="40px">
+                                    Page
+                                </td>
+                                <td width="40px">
+                                    <select name="ctl00$ccMain$ddlCustomerPages" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$ccMain$ddlCustomerPages\&#39;,\&#39;\&#39;)&#39;, 0)" id="ctl00_ccMain_ddlCustomerPages" style="width: auto; vertical-align: top; text-align: center">
+			<option selected="selected" value="1">1</option>
+
+		</select>
+                                </td>
+                                <td class="TopSearchCat" width="20px">
+                                    of
+                                </td>
+                                <td class="TopSearchCat" width="20px">
+                                    <span id="ctl00_ccMain_lblPagesCount">1</span>
+                                </td>
+                                <td>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+	</tr>
+	
+                <tr>
+                    <td height="15">
+                    </td>
+                </tr>
+            </table>
+            <br />
+        
+</div>
+
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color: #3f3f3f">
+                <div style="width: 1000px; margin: 0px atuo;">
+                    <div class="col-md-12 footer footerlinks">
+                        <a href="" class="footer_newlinks">Site Map</a> <a href="" class="footer_newlinks">Privacy
+                            Policy</a> <a href="" class="footer_newlinks">Terms &amp; Conditions</a> <a href=""
+                                class="footer_newlinks">Disclaimer</a> <a href="" class="footer_newlinks">Accessibility</a>
+                        <a href="" class="footer_newlinks">Faq's</a> <a href="" class="footer_newlinks">Help</a>
+                        <a href="" class="footer_newlinks">Feedback</a></div>
+                </div>
+                
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" id="ftr">
+                    <tbody>
+                        <tr>
+                            <td width="50%" align="left" valign="middle" style="padding: 6px; color: #FFF;">
+                                Site best viewed in 1024x768 / IE7
+                            </td>
+                            <td width="50%" align="right" valign="middle" style="padding: 6px;">
+                                <table border="0" cellspacing="0" cellpadding="0">
+                                    <tbody>
+                                        <tr>
+                                            <td style="padding: 6px; color: #FFF;">
+                                                Designed &amp; Developed by
+                                            </td>
+                                            <td>
+                                                <img src="../images/TS-LOGO.png" width="100px" height="22px">
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script>
+        var $affectedElements = $("*");
+        $affectedElements.each(function () {
+            var $this = $(this);
+            $this.data("orig-size", $this.css("font-size"));
+        });
+
+        $("#btn-increase").click(function () {
+
+            $("p, a, li, td, th, span, label").css("font-size", "15px");
+
+            $("h1, h2, h3, h4, h5, h6").css("font-size", "17px");
+
+        })
+
+        $("#btn-decrease").click(function () {
+            $("p, a, li, td, th, span, label").css("font-size", "12px");
+
+            $("h1, h2, h3, h4, h5, h6").css("font-size", "15px");
+        })
+
+        $("#btn-orig").click(function () {
+            $affectedElements.each(function () {
+                var $this = $(this);
+                $this.css("font-size", $this.data("orig-size"));
+            });
+        })
+
+        function changeFontSize(direction) {
+            $affectedElements.each(function () {
+                var $this = $(this);
+                $this.css("font-size", parseInt($this.css("font-size")) + direction);
+            });
+        }
+
+
+
+        $(".color").click(function () {
+            $("body").css({ "-moz-filter": "grayscale(100%)", "-webkit-filter": "grayscale(100%)", "filter": "gray", "filter": "grayscale(100%)" });
+
+            $("body").css("background", "#000");
+
+        });
+
+
+        $(".nocolor").click(function () {
+            $("body").css({ "-moz-filter": "grayscale(0%)", "-webkit-filter": "grayscale(0%)", "filter": "white", "filter": "grayscale(0%)" });
+
+            $("body").css("background", "url(../images/bg-ts.jpg)");
+
+        });
+    </script>
+    
+<script type="text/javascript">
+//<![CDATA[
+var Page_Validators =  new Array(document.getElementById("ctl00_ccMain_rfvDistricts"));
+//]]>
+</script>
+
+<script type="text/javascript">
+//<![CDATA[
+var ctl00_ccMain_rfvDistricts = document.all ? document.all["ctl00_ccMain_rfvDistricts"] : document.getElementById("ctl00_ccMain_rfvDistricts");
+ctl00_ccMain_rfvDistricts.controltovalidate = "ctl00_ccMain_ddlDistricts";
+ctl00_ccMain_rfvDistricts.errormessage = "Please Select District";
+ctl00_ccMain_rfvDistricts.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+ctl00_ccMain_rfvDistricts.initialvalue = "";
+//]]>
+</script>
+
+
+<script type="text/javascript">
+//<![CDATA[
+
+var Page_ValidationActive = false;
+if (typeof(ValidatorOnLoad) == "function") {
+    ValidatorOnLoad();
+}
+
+function ValidatorOnSubmit() {
+    if (Page_ValidationActive) {
+        return ValidatorCommonOnSubmit();
+    }
+    else {
+        return true;
+    }
+}
+        Sys.Application.add_init(function() {
+    $create(Sys.UI._UpdateProgress, {"associatedUpdatePanelId":"ctl00_ccMain_updtmodalpop","displayAfter":10,"dynamicLayout":true}, null, null, $get("ctl00_ccMain_UpdateProgress1"));
+});
+
+document.getElementById('ctl00_ccMain_rfvDistricts').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('ctl00_ccMain_rfvDistricts'));
+}
+//]]>
+</script>
+</form>
+</body>
+</html>
+ÇŒ”—      ^ïB„^ïB…AÍ¼l       X~1592738370,:https://sand.telangana.gov.in/TSSandPortal/Reports/AvailableStockyards.aspx necko:classified 1 security-info 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 request-method POST response-head HTTP/1.1 200 OK
+Cache-Control: private
+Content-Type: text/html; charset=utf-8
+Server: Microsoft-IIS/7.5
+X-Frame-Options: DENY
+X-XSS-Protection: 1; mode=block
+x-content-type-options: nosniff
+strict-transport-security: max-age=31536000
+content-security-policy: font-src *;img-src * data:;
+Feature-Policy: accelerometer 'none'; camera 'none'; geolocation 'none'; gyroscope 'none'; magnetometer 'none'; microphone 'none'; payment 'none'; usb 'none'
+referrer-policy: strict-origin
+Date: Sun, 21 Jun 2020 11:20:38 GMT
+Content-Length: 34920
+ charset UTF-8 uncompressed-len 0   ˆh
